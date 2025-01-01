@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Smart Stick Tracker</title>
+    <link rel="stylesheet" href="Frontend\style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div class="user-login">
+            <h3>User Login</h3>
+            <input type="text" id="mobileNumber" placeholder="Enter Mobile Number">
+            <button onclick="sendOtp()">Send OTP</button>
+            <input type="text" id="otp" placeholder="Enter OTP">
+            <button onclick="userLogin()">Login</button>
+        </div>
+        <div class="admin-login">
+            <h3>Admin Login</h3>
+            <input type="text" id="adminUsername" placeholder="Admin Username">
+            <input type="password" id="adminPassword" placeholder="Password">
+            <button onclick="adminLogin()">Login</button>
+        </div>
+    </div>
+    <script src="Backend\server.js"></script>
+</body>
+</html>
