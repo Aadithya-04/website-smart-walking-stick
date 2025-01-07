@@ -2,18 +2,88 @@
 <html lang="en">
 <head>
     <title>Smart Stick Tracker</title>
-    <link rel="stylesheet" href="Frontend\style.css">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyALHxZa62B1ETkls4f53zG0VQW25d4dUT8",
+            authDomain: "website-smart-walking-stick.firebaseapp.com",
+            databaseURL: "https://website-smart-walking-stick-default-rtdb.firebaseio.com",
+            projectId: "website-smart-walking-stick",
+            storageBucket: "website-smart-walking-stick.appspot.com",
+            messagingSenderId: "994400026601",
+            appId: "1:994400026601:web:88c8078f785cea46cb1578",
+            measurementId: "G-7JSX47ZKCW"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+
+        // OTP Functions
+        window.sendOtp = () => {
+            const phoneNumber = document.getElementById('mobileNumber').value;
+
+            // Create a RecaptchaVerifier instance
+            const appVerifier = new RecaptchaVerifier('recaptcha-container', {
+                size: 'invisible'
+            }, auth);
+
+            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    window.confirmationResult = confirmationResult;
+                    alert('OTP sent successfully!');
+                })
+                .catch((error) => {
+                    console.error(error);
+                    alert('Error sending OTP: ' + error.message);
+                });
+        };
+
+        window.verifyOtp = () => {
+            const otp = document.getElementById('otp').value;
+
+            window.confirmationResult.confirm(otp)
+                .then((result) => {
+                    return result.user.getIdToken();
+                })
+                .then((idToken) => {
+                    // Send ID token to your server for verification
+                    fetch('/user/verifyOtp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idToken })
+                    })
+                        .then(response => response.json())
+                        .then(data => alert(data.message))
+                        .catch(error => console.error(error));
+                })
+                .catch((error) => {
+                    console.error(error);
+                    alert('Invalid OTP!');
+                });
+        };
+    </script>
 </head>
 <body>
     <div class="login-container">
         <h2>Login</h2>
+
+        <!-- User Login Section -->
         <div class="user-login">
             <h3>User Login</h3>
             <input type="text" id="mobileNumber" placeholder="Enter Mobile Number">
-            <button onclick="sendOtp()">Send OTP</button>
+            <button id="sendOtpButton" onclick="sendOtp()">Send OTP</button>
             <input type="text" id="otp" placeholder="Enter OTP">
-            <button onclick="userLogin()">Login</button>
+            <button onclick="verifyOtp()">Login</button>
         </div>
+
+        <!-- Admin Login Section -->
         <div class="admin-login">
             <h3>Admin Login</h3>
             <input type="text" id="adminUsername" placeholder="Admin Username">
@@ -21,6 +91,23 @@
             <button onclick="adminLogin()">Login</button>
         </div>
     </div>
-    <script src="Backend\server.js"></script>
+
+    <!-- Invisible Recaptcha -->
+    <div id="recaptcha-container"></div>
+
+    <script>
+        // Admin Login Functionality
+        function adminLogin() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            // Replace this with your backend admin authentication logic
+            if (username === "admin" && password === "password123") {
+                alert("Admin login successful!");
+            } else {
+                alert("Invalid admin credentials!");
+            }
+        }
+    </script>
 </body>
 </html>
