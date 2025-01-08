@@ -25,22 +25,39 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
 
-        // OTP Functions
+        // Updated OTP Functions
         window.sendOtp = () => {
             const phoneNumber = document.getElementById('mobileNumber').value;
 
-            // Create a RecaptchaVerifier instance
-            const appVerifier = new RecaptchaVerifier('recaptcha-container', {
-                size: 'invisible'
-            }, auth);
+            if (!phoneNumber) {
+                alert('Please enter a valid phone number!');
+                return;
+            }
 
+            // Initialize the RecaptchaVerifier if not already initialized
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+                    size: 'invisible',
+                    callback: function (response) {
+                        console.log('ReCAPTCHA solved:', response);
+                    },
+                    'expired-callback': function () {
+                        alert('ReCAPTCHA expired. Please try again.');
+                    }
+                }, auth);
+            }
+
+            const appVerifier = window.recaptchaVerifier;
+
+            // Attempt to send the OTP
             signInWithPhoneNumber(auth, phoneNumber, appVerifier)
                 .then((confirmationResult) => {
                     window.confirmationResult = confirmationResult;
+                    console.log('OTP sent successfully:', confirmationResult);
                     alert('OTP sent successfully!');
                 })
                 .catch((error) => {
-                    console.error(error);
+                    console.error('Error sending OTP:', error); // Log detailed error messages
                     alert('Error sending OTP: ' + error.message);
                 });
         };

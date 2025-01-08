@@ -3,17 +3,15 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin'); // Import Firebase Admin SDK
-const app = express();
 
+const app = express();
 app.use(bodyParser.json());
 
 // Firebase Admin Initialization
-const serviceAccount = require('./website-smart-walking-stick-firebase-adminsdk-se9pk-46abb99a7d.json');
-
- // Download from Firebase Console
+const serviceAccount = require('./website-smart-walking-stick-firebase-adminsdk-se9pk-46abb99a7d.json'); // Replace with your service account file path
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://website-smart-walking-stick-default-rtdb.firebaseio.com"
+    databaseURL: "https://website-smart-walking-stick-default-rtdb.firebaseio.com" // Replace with your database URL
 });
 
 // Mock Database
@@ -24,9 +22,9 @@ const gpsData = {};
 // Admin Login
 app.post('/admin/login', (req, res) => {
     const { username, password } = req.body;
-    const admin = admins.find(a => a.username === username);
-    if (admin && bcrypt.compareSync(password, admin.password)) {
-        const token = jwt.sign({ username }, 'secret', { expiresIn: '1h' });
+    const adminUser = admins.find(a => a.username === username);
+    if (adminUser && bcrypt.compareSync(password, adminUser.password)) {
+        const token = jwt.sign({ username }, 'secret', { expiresIn: '1h' }); // Replace 'secret' with an environment variable in production
         res.json({ token });
     } else {
         res.status(401).json({ message: 'Invalid credentials' });
@@ -49,10 +47,11 @@ app.post('/user/verifyOtp', async (req, res) => {
             users.push(user);
         }
 
+        console.log("Decoded Token:", decodedToken);
         res.json({ message: 'OTP verified successfully', user });
     } catch (error) {
-        console.error(error);
-        res.status(401).json({ message: 'Invalid OTP' });
+        console.error('Error verifying token:', error);
+        res.status(401).json({ message: 'Invalid OTP', error: error.message });
     }
 });
 
@@ -73,4 +72,8 @@ app.get('/user/location/:stickId', (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+// Start the Server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
